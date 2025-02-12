@@ -1,0 +1,70 @@
+name: Deploy to FitVision
+
+on:
+  push:
+    branches:
+      - main
+      - development
+      - QA
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build the project
+        run: npm run build
+
+      - name: Install sshpass
+        run: sudo apt-get update && sudo apt-get install -y sshpass
+
+      - name: Configure SSH, Test Connection, and Deploy
+        run: |
+          # Create .ssh directory and write the private key from the secret
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+          # Start the SSH agent and unlock the key using the passphrase secret
+          eval "$(ssh-agent -s)"
+          echo "${{ secrets.SSH_PASSPHRASE }}" | ssh-add ~/.ssh/id_rsa
+
+          # Add the remote host to known_hosts to avoid interactive prompts
+          ssh-keyscan -H 174.138.124.25 >> ~/.ssh/known_hosts
+
+          # (Optional) List loaded keys for debugging
+          ssh-add -l
+
+          # Test the SSH connection using the unlocked key from the agent
+          ssh -o StrictHostKeyChecking=no -o BatchMode=yes -o ConnectTimeout=10 adonis@174.138.124.25 "echo 'SSH connection successful'"
+
+          # Determine the deployment directory based on branch name
+          if [ "${GITHUB_REF##*/}" = "main" ]; then
+            DEPLOY_DIR="/var/www/production"
+          elif [ "${GITHUB_REF##*/}" = "development" ]; then
+            DEPLOY_DIR="/var/www/dev"
+          elif [ "${GITHUB_REF##*/}" = "QA" ]; then
+            DEPLOY_DIR="/var/www/qa"
+          else
+            echo "Unknown branch: ${GITHUB_REF}" >&2
+            exit 1
+          fi
+          echo "Using deployment directory: ${DEPLOY_DIR}"
+
+          # Since your public files are inside the public folder, set SRC_DIR accordingly
+          SRC_DIR="./public/"
+          echo "Deploying from ${SRC_DIR}"
+
+          # Deploy the files using rsync over SSH.
+          rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no -o BatchMode=yes -o ConnectTimeout=10" ${SRC_DIR} adonis@174.138.124.25:"${DEPLOY_DIR}"/ --rsync-path="mkdir -p ${DEPLOY_DIR} && rsync"
