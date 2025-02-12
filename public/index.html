@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitVision AI - Coming Soon</title>
+    <link rel="stylesheet" href="../styles/index.css">
+</head>
+<body>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+    </nav>
+    <div class="container">
+        <!-- Updated Hero Section with Image -->
+        <div class="hero">
+            <img src="images/fitvision.jpg" alt="FitVision AI - Personalized Workout Plans" class="hero-img">
+        </div>
+        <h1>FitVision AI - AI-Powered Personalized Workout Plans</h1>
+        <p>Welcome to the future of fitness! FitVision AI is an innovative platform using artificial intelligence to create customized workout plans tailored just for you. Stay tuned as we revolutionize how you achieve your fitness goals!</p>
+        <a href="#" class="btn">Coming Soon</a>
+        
+        <!-- ALWAYS KEEP THIS LINE --> <p class="footer" id="stage">Loading environment...</p>
+    </div>
+
+    <script> <!-- ALWAYS KEEP THIS SCRIPT START -->
+        const stage = document.location.hostname.includes("qa")
+            ? "QA Environment"
+            : document.location.hostname.includes("dev")
+            ? "Development Environment"
+            : "Production Environment";
+        document.getElementById("stage").textContent = `Version 1.0 - ${stage}`;
+    </script> <!-- ALWAYS KEEP THIS SCRIPT END -->
+</body>
+</html>

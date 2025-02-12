@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - FitVision</title>
+    <link rel="stylesheet" href="../styles/about.css">
+</head>
+<body>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+    </nav>
+    <div class="container">
+        <h1>Meet Our Team</h1>
+        <div class="team-photo-placeholder"> <!-- Placeholder for group picture -->
+            <p>[Group photo will be added here]</p>
+        </div>
+        <p>I am a passionate Developer of sports lovers and tech enthusiasts dedicated to revolutionizing sports blogging.</p>
+
+            <div class="team-member">
+                <img src="images/jesus.jpg" alt="Jesus">
+                <h3>Jesus</h3>
+                <p class="bio">Aspiring Web Developer with a genuine passion for the craft, honed through rigorous training at NJIT, currently pursuing my Bachelor's Degree. Actively seeking opportunities to apply my skills and contribute to projects, ensuring both aesthetic appeal and functional excellence. Open-source enthusiast and maintainer, embracing collaboration and knowledge sharing.</p>
+            </div>
+        </div>
+
+        <!-- ALWAYS KEEP THIS LINE --> <p class="footer" id="stage">Loading environment...</p>
+    </div>
+
+    <script> //ALWAYS KEEP THIS SCRIPT START
+        const stage = document.location.hostname.includes("qa")
+            ? "QA Environment"
+            : document.location.hostname.includes("dev")
+            ? "Development Environment"
+            : "Production Environment";
+        document.getElementById("stage").textContent = `Version 1.0 - ${stage}`;
+    </script> <!-- ALWAYS KEEP THIS SCRIPT END -->
+</body>
+</html>
