@@ -35,8 +35,8 @@ jobs:
           echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           eval "$(ssh-agent -s)"
-          ssh-add ~/.ssh/id_rsa
-          ssh-keyscan -H 174.138.124.25 >> ~/.ssh/known_hosts
+          echo "${{ secrets.SSH_PASSPHRASE }}" | ssh-add ~/.ssh/id_rsa
+          ssh-keyscan -H 174.138.124.25 >> ~/.ssh/known_hosts 
 
       - name: Test SSH connection
         run: |
