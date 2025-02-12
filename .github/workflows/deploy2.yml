@@ -31,7 +31,7 @@ jobs:
 
       - name: Configure SSH, Test Connection, and Deploy
         run: |
-          # Create .ssh directory and write the private key from the secret
+          # Create .ssh directory and set up the private key
           mkdir -p ~/.ssh
           echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
@@ -62,9 +62,9 @@ jobs:
           fi
           echo "Using deployment directory: ${DEPLOY_DIR}"
 
-          # Since your public files are inside the public folder, set SRC_DIR accordingly
+          # Set the source directory to the public folder
           SRC_DIR="./public/"
           echo "Deploying from ${SRC_DIR}"
 
-          # Deploy the files using rsync over SSH.
-          rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no -o BatchMode=yes -o ConnectTimeout=10" ${SRC_DIR} adonis@174.138.124.25:"${DEPLOY_DIR}"/ --rsync-path="mkdir -p ${DEPLOY_DIR} && rsync"
+          # Deploy the files using rsync with the --checksum flag to force updates
+          rsync -avz --checksum --delete -e "ssh -o StrictHostKeyChecking=no -o BatchMode=yes -o ConnectTimeout=10" ${SRC_DIR} adonis@174.138.124.25:"${DEPLOY_DIR}"/ --rsync-path="mkdir -p ${DEPLOY_DIR} && rsync"
