@@ -62,13 +62,9 @@ jobs:
           fi
           echo "Using deployment directory: ${DEPLOY_DIR}"
 
-          # Determine the source directory: if ./build exists, use it; otherwise, use the current directory.
-          if [ -d "./build" ]; then
-            SRC_DIR="./build/"
-          else
-            SRC_DIR="./"
-          fi
+          # Since your public files are inside the public folder, set SRC_DIR accordingly
+          SRC_DIR="./public/"
           echo "Deploying from ${SRC_DIR}"
 
-          # Deploy the built files using rsync over SSH.
+          # Deploy the files using rsync over SSH.
           rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no -o BatchMode=yes -o ConnectTimeout=10" ${SRC_DIR} adonis@174.138.124.25:"${DEPLOY_DIR}"/ --rsync-path="mkdir -p ${DEPLOY_DIR} && rsync"
