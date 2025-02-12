@@ -29,16 +29,18 @@ jobs:
       - name: Install sshpass
         run: sudo apt-get update && sudo apt-get install -y sshpass
 
-      - name: Configure SSH key
+      - name: Configure SSH key with SSH agent
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/id_rsa
           ssh-keyscan -H 174.138.124.25 >> ~/.ssh/known_hosts
 
       - name: Test SSH connection
         run: |
-          sshpass -p "${{ secrets.SUDO_PASSWORD }}" ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa adonis@174.138.124.25 "echo 'SSH connection successful'"
+          ssh -o StrictHostKeyChecking=no -o BatchMode=yes -o ConnectTimeout=10 -i ~/.ssh/id_rsa adonis@174.138.124.25 "echo 'SSH connection successful'"
 
       - name: Set deployment directory
         id: set-deploy-dir
