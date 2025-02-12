@@ -29,37 +29,38 @@ jobs:
       - name: Install sshpass
         run: sudo apt-get update && sudo apt-get install -y sshpass
 
-      - name: Configure SSH key and Test SSH connection
+      - name: Configure SSH, Test Connection, and Deploy
         run: |
+          # Create .ssh directory and write the private key from the secret
           mkdir -p ~/.ssh
           echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          # Start the SSH agent and capture its environment variables
-          eval "$(ssh-agent -s)"
-          # Unlock the key using the passphrase from the secret
-          echo "${{ secrets.SSH_PASSPHRASE }}" | ssh-add ~/.ssh/id_rsa
-          # Add the server to known_hosts to avoid interactive prompts
-          ssh-keyscan -H 174.138.124.25 >> ~/.ssh/known_hosts
-          # Optionally, list the loaded keys for debugging
-          ssh-add -l
-          # Test SSH connection without explicitly specifying the identity file
-          ssh -o StrictHostKeyChecking=no -o BatchMode=yes -o ConnectTimeout=10 adonis@174.138.124.25 "echo 'SSH connection successful'"
-      
-      - name: Set deployment directory
-        id: set-deploy-dir
-        run: |
-          case "${{ github.ref_name }}" in
-            main)
-              echo "DEPLOY_DIR=/var/www/production" >> $GITHUB_ENV ;;
-            development)
-              echo "DEPLOY_DIR=/var/www/dev" >> $GITHUB_ENV ;;
-            QA)
-              echo "DEPLOY_DIR=/var/www/qa" >> $GITHUB_ENV ;;
-            *)
-              echo "Unknown branch: ${{ github.ref_name }}" >&2
-              exit 1 ;;
-          esac
 
-      - name: Deploy to server
-        run: |
+          # Start the SSH agent and unlock the key using the passphrase secret
+          eval "$(ssh-agent -s)"
+          echo "${{ secrets.SSH_PASSPHRASE }}" | ssh-add ~/.ssh/id_rsa
+
+          # Add the remote host to known_hosts to avoid interactive prompts
+          ssh-keyscan -H 174.138.124.25 >> ~/.ssh/known_hosts
+
+          # (Optional) List loaded keys for debugging
+          ssh-add -l
+
+          # Test the SSH connection using the unlocked key from the agent
+          ssh -o StrictHostKeyChecking=no -o BatchMode=yes -o ConnectTimeout=10 adonis@174.138.124.25 "echo 'SSH connection successful'"
+
+          # Determine the deployment directory based on branch name
+          if [ "${GITHUB_REF##*/}" = "main" ]; then
+            DEPLOY_DIR="/var/www/production"
+          elif [ "${GITHUB_REF##*/}" = "development" ]; then
+            DEPLOY_DIR="/var/www/dev"
+          elif [ "${GITHUB_REF##*/}" = "QA" ]; then
+            DEPLOY_DIR="/var/www/qa"
+          else
+            echo "Unknown branch: ${GITHUB_REF}" >&2
+            exit 1
+          fi
+          echo "Using deployment directory: ${DEPLOY_DIR}"
+
+          # Deploy the built files using rsync over SSH (the SSH agent provides the key)
           rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no -o BatchMode=yes -o ConnectTimeout=10" ./build/ adonis@174.138.124.25:"${DEPLOY_DIR}"/
