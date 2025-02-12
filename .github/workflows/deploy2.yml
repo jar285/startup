@@ -40,7 +40,8 @@ jobs:
 
       - name: Test SSH connection
         run: |
-          ssh -o StrictHostKeyChecking=no -o BatchMode=yes -o ConnectTimeout=10 -i ~/.ssh/id_rsa adonis@174.138.124.25 "echo 'SSH connection successful'"
+          ssh -o StrictHostKeyChecking=no -o BatchMode=yes -o ConnectTimeout=10 adonis@174.138.124.25 "echo 'SSH connection successful'"
+
 
       - name: Set deployment directory
         id: set-deploy-dir
