@@ -35,13 +35,13 @@ jobs:
           echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           eval "$(ssh-agent -s)"
+          # Pipe the passphrase from the secret to unlock the key
           echo "${{ secrets.SSH_PASSPHRASE }}" | ssh-add ~/.ssh/id_rsa
-          ssh-keyscan -H 174.138.124.25 >> ~/.ssh/known_hosts 
+          ssh-keyscan -H 174.138.124.25 >> ~/.ssh/known_hosts
 
       - name: Test SSH connection
         run: |
           ssh -o StrictHostKeyChecking=no -o BatchMode=yes -o ConnectTimeout=10 adonis@174.138.124.25 "echo 'SSH connection successful'"
-
 
       - name: Set deployment directory
         id: set-deploy-dir
@@ -60,4 +60,4 @@ jobs:
 
       - name: Deploy to server
         run: |
-          rsync -avz --delete ./build/ adonis@174.138.124.25:"${DEPLOY_DIR}"/
+          rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no -o BatchMode=yes -o ConnectTimeout=10" ./build/ adonis@174.138.124.25:"${DEPLOY_DIR}"/
